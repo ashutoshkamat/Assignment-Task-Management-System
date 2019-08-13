@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<title></title>
+	
+	<link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="homepage.css">
+
+</head>
+<body class="homepage-staff">
+ 	
+<div  ng-app='displaystudentlist' ng-controller='displaystudentlistcontroller'>
+<a class="back-b" href="homepage.html">BACK</a>
+<a  class="ref-b" href="displaystudentsubmissions.html">Refresh</a>
+
+	<div id='msg'></div>
+	<table>
+		<tr>
+		<th>Roll number</th>
+		<th>Division</th>
+		<th>Batch</th>
+		<th>Assignment no</th>
+		<th>Subpart</th>
+		<th>Submitted on</th>
+		<th>View submissions</th>
+		<th>Checked</th>
+		</tr>
+		<tr ng-repeat='x in studentdata' ng-init="link='displaysubmissiondata.html?assignno='">
+		<td>{{x.Roll_number}}</td>
+		<td>{{x.Division}}</td>
+		<td>{{x.Batch}}</td>
+		<td>{{x.Assignment_no}}</td>
+		<td>{{x.Subpart}}</td>
+		<td>{{x.submitted_on}}</td>
+		<td ><a ng-href="{{link+x.Assignment_no+':'+x.Subpart+':'+x.Roll_number}}">View</a></td>
+		<td><img src="{{x.ischecked+'.png'}}"></td>
+		</tr>
+
+
+	</table>
+
+</div>
+<script type="text/javascript">
+	angular.module('displaystudentlist',[]).controller('displaystudentlistcontroller', function($scope, $http)
+	{
+
+
+		var studentdata=JSON.parse(localStorage.getItem('studentdata'));
+
+		$scope.studentdata=studentdata.records;
+
+
+
+	});
+
+
+
+</script>
+</body>
+</html>

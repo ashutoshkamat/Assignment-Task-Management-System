@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<link rel="icon" type="image/png" href="login.png"/>
+	<link rel="stylesheet" type="text/css" href="login.css">
+</head>
+
+
+
+<body class="back-image">
+	<div class="limiter"  ng-app="studentlogin" ng-controller="studentlogincontroller">
+		<div class="container-login">
+			<div class="wrap-login">
+
+			<form class="login-form">
+				<div>
+					<img src="student.png">
+				</div>
+
+				<span class="login-form-title">Student Login
+				</span>
+		
+		
+			<div class="wrap-input" >
+				<input class="input" type="text" name="ID" placeholder="Enter ID" maxlength="6" ng-model="rollnumber">
+				<span class="focus-input">
+				</span>
+				<span class="symbol-input">
+					<i class="fa fa-envelope" aria-hidden="true"></i>
+				</span>
+			</div>
+
+			<div class="wrap-input">
+				<input class="input" type="password" name="Password" placeholder=" Enter Password" maxlength="20"  ng-model="password">
+				<span class="focus-input">
+				</span>
+				<span class="symbol-input">
+					<i class="fa fa-lock" aria-hidden="true"></i>
+				</span>
+			</div>
+
+			<div class="container-login-form-btn">
+				<button class="login-form-btn" ng-click='clickstatus=1'>
+					Login
+				</button>			
+			</div>
+			<div id='msg'></div>
+			</form>
+
+			</div>
+		</div>
+	</div>
+
+
+<script type="text/javascript">
+	angular.module("studentlogin",[]).controller("studentlogincontroller", function($scope,$http)
+	{	
+		$scope.clickstatus=0;
+		$scope.watch('clickstatus',function(newValue, oldValue)
+			{
+			$http({
+
+               method: 'POST',
+               url:  'studentlogin.php',
+				data: {"roll":$scope.rollnumber,
+						"password": $scope.password}
+			}).then(
+
+				function(response)
+				{
+						if(response.data.error=='1')
+						{
+							alert("Student not found !");
+						}
+						else
+						{
+							localStorage.setItem("rollnumber",$scope.rollnumber);
+							localStorage.setItem("sem",response.data.sem);
+							localStorage.setItem("department",response.data.department);
+							localStorage.setItem("batch",response.data.batch);
+							localStorage.setItem("division",response.data.division);
+							window.location.href = "homepage.html";
+						}
+
+				});
+            
+	});		
+
+	});
+
+
+</script>
+
+</body>
+
+
+
+</html>

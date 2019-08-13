@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<title></title>
+
+	
+</head>
+<body ng-app="displaydatamodule" ng-controller="displaydatacontroller">
+
+<div id='msg'></div>
+
+<table>
+		<tr>
+			<td>Title :</td>
+			<td><p id="title"></p></td>
+		</tr>
+		
+		<tr>
+			<td>Aim :</td>
+			<td><p id="aim"></p></td>
+		</tr>
+		<tr>
+			<td>Objective :</td>		
+			<td><p id="objective"></p></td>
+		</tr>
+		<tr >
+			<td>FAQ :</td>
+			<td><div id="FAQ"></div></td>
+		</tr>
+		<tr >
+			<td>Theory :</td>
+			<td><div id="Theory"></div></td>
+		</tr>
+		<tr>
+			<td>Conclusion :</td>
+			<td><p id="conclusion"></p></td>
+		</tr>
+		<tr>
+			<td>Outcome :</td>
+			<td><p id="outcome"></p></td>
+		</tr>
+</table>
+Online submission :<input type="file" id="onlinesubmission" onchange="openfile(event)" ng-model="onlinesubmission" accept=".txt,.png">
+<br>
+<button id="submitbtn" style="display:none" ng-click="softcopysubmission=1">Confirm submission</button>
+<div id="submittedmsg" style="display:none">Online submission completed !</div>
+<div id="latesubmitmsg" style="display:none"><font color="red">Too late ! Submission date expired !</font></div>
+
+<script type="text/javascript">
+
+
+	var filedata='';
+
+	var openfile = function(event) {
+    		
+		var x= document.getElementById('onlinesubmission');
+	
+		if('files' in x)
+			{
+				if(x.files.length===0){
+				alert("file not selected");	
+				}
+				else {
+    			var input = event.target;
+
+    			var reader = new FileReader();
+    			reader.onload = function(){
+      			filedata = reader.result;
+				     			
+      			};
+    			reader.readAsText(input.files[0]);
+  				document.getElementById("submitbtn").style.display = "block";
+		
+  				}
+			}
+  			else
+  			{
+
+				alert("error files");
+  			}
+  		};
+			
+	
+	angular.module('displaydatamodule',[]).controller('displaydatacontroller',function($http,$scope)
+	{
+
+				
+	$scope.softcopysubmission=0;
+	var urldata = location.search.substring(1);
+	var parameters = urldata.split('=');
+	parameters = parameters[1].split(':');
+	var assignmentnumber=parameters[0];
+	var subpart=parameters[1];
+	if(subpart=="-")
+	{
+		subpart='N';
+	}
+	var subject = localStorage.getItem("subject");
+	var department = localStorage.getItem("department");
+	var sem = localStorage.getItem("sem");
+	var roll=localStorage.getItem("rollnumber");
+	var batch=localStorage.getItem("batch");	
+	var division=localStorage.getItem("division");
+		$http({
+              
+               method: 'POST',
+               url:  'viewassignment.php',
+               data: {"department": department,
+           			  "subject": subject,
+           			  "assignmentno":assignmentnumber,
+           			  "sem": sem,
+           			  "roll": roll,
+           			  "subpart": subpart
+						}
+          }).then(
+				function(response) 
+				{
+					$scope.data = response.data;
+
+					var submission_status=response.data.charAt(0);
+					
+					$scope.data=JSON.parse(response.data.substring(1,response.data.length));
+					document.getElementById('aim').innerHTML=$scope.data.Aim;
+					document.getElementById('title').innerHTML=$scope.data.Title;
+					document.getElementById('objective').innerHTML=$scope.data.Objective;
+					document.getElementById('conclusion').innerHTML=$scope.data.Conclusion;
+					document.getElementById('outcome').innerHTML=$scope.data.Outcome;
+					var cnt=0;
+					var FAQdata='';
+					while(cnt<$scope.data.FAQ.length)
+					{
+						FAQdata=FAQdata+$scope.data.FAQ[cnt]["no"]+". "+$scope.data.FAQ[cnt]["Question"]+"<br>";
+						++cnt;
+					}
+					document.getElementById('FAQ').innerHTML=FAQdata;
+					cnt=0;
+					var Thdata='';
+					while(cnt<$scope.data.Theory.length)
+					{
+						Thdata=Thdata+$scope.data.Theory[cnt]["no"]+". "+$scope.data.Theory[cnt]["Question"]+"<br>";
+						++cnt;
+					}
+					document.getElementById('Theory').innerHTML=Thdata;
+
+					if(submission_status=='1' || submission_status=='2')
+					{
+						document.getElementById("onlinesubmission").disabled = "true";		
+						if(submission_status=='1')
+							document.getElementById("submittedmsg").style.display = "block";
+						else
+							document.getElementById("latesubmitmsg").style.display = "block";
+						
+						document.getElementById("submitbtn").style.display = "none";
+		
+					}
+										
+
+				});
+    
+        $scope.watch('softcopysubmission',function(newValue, oldValue)
+			{
+				$http({
+        	      
+            	 	method: 'POST',
+               		url:  'storesoftcopysubmission.php',
+               		data: {"department": department,
+           			  		 "subject": subject,
+           			  		 "Assignment_no": assignmentnumber,
+           			  		 "sem": sem,
+           			  		 "roll": roll,
+           			  		 "batch": batch,
+           			  		 "subpart": subpart,
+           			  		 "division": division,
+							 "filedata":filedata}
+         		 }).then(
+					function(response) 
+					{
+
+
+					document.getElementById("msg").innerHTML=response.data;	
+					document.getElementById("onlinesubmission").disabled = "true";		
+					document.getElementById("submittedmsg").style.display = "block";
+					document.getElementById("submitbtn").style.display = "none";
+						
+
+						
+
+					});
+
+			});
+
+         });
+
+
+
+
+
+</script>
+
+
+
+</body>
+</html>

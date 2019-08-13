@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="mainpage.css">
+	<title></title>
+
+	</style>
+
+</head>
+<body class="back-student-image">
+	<a  class="ref-b" href="homepage.html">Refresh</a>
+	
+	<div class="float-right-p">
+        <div class="dropdown">
+            <img src="acc.png" width="50px" height="50px">
+        <div class="dropdown-content">
+            <a href="#">Acc. Info.</a>
+            <a href="Login.html">Logout</a>
+        </div>
+        </div>
+        </div>
+	</div>
+
+	<div class="header">
+		<h1 align="middle">Welcome!</h1>
+	</div>
+	<br>
+	<div ng-app="studenthomepage" ng-controller="studenthomepagecontroller">
+
+		<div class="topnav">
+			<button ng-click="asssignmentstatus = 1">Assignments  </button>|
+		</div>
+
+
+	</div>
+
+	<script type="text/javascript">
+	angular.module("studenthomepage",[]).controller("studenthomepagecontroller", function($scope,$http)
+	{	
+			$scope.asssignmentstatus=0;
+
+			$scope.watch('asssignmentstatus',function(newValue, oldValue)
+			{
+				$http({
+
+               method: 'POST',
+               url:  'getsubjects.php',
+			   data: {
+			   			sem: localStorage.getItem('sem'),
+			   			department: localStorage.getItem('department'),
+			   			} 
+				}).then(function(response){
+						
+
+					$scope.subjects=response.data.records;
+					localStorage.setItem("subjects",JSON.stringify($scope.subjects));
+
+					window.location.href="assignmentlist.html";
+				});
+			});
+
+
+	});
+
+
+	</script>
+
+
+</body>
+</html>

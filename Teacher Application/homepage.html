@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<title>Main Page</title>
+	<link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="homepage.css">
+</head>
+<body class="homepage-staff" ng-app="homepage" ng-controller="homepagecontroller">
+	
+	<a  class="ref-b" href="homepage.html">Refresh</a>
+	<div class="float-right-p">
+        <div class="dropdown">
+            <img src="acc.png" width="50px" height="50px">
+        <div class="dropdown-content">
+            <a href="#">Acc. Info.</a>
+            <a href="LoginPage.html">Logout</a>
+        </div>
+        </div>
+	</div>
+	<div class="header">
+		<h1 align="middle" id="displayname"></h1>
+		
+	</div>
+	
+	<br>
+	<label for="subject">
+			Select subject:			
+		</label>
+		<div id="selectsubject" >
+		<select id="selectsubjectoption" ng-model="selectedoption" ng-change="onSelect()">
+				<option ng-repeat="x in subjects">{{ x.subject_name }}</option>
+	</select>
+		
+
+	<div class="topnav" id='homepagebody' style="display: none;">
+
+
+		<button ng-click="listassignmentstatus = 1" >View assignments </button>|
+	
+		<button ng-click="createasssignmentstatus = 1">Add assignment  </button>|
+		<button ng-click="submissionstatus=1">Submissions</button>
+	</div>
+	<br>
+	<br>
+
+	<p id='msg'></p>
+	<div id="filterdiv" style="display: none">
+		<br>
+		<table>
+		<tr>
+			<td><font color='red'>*</font>Select Assignment</td>
+			<td>
+
+				<select id="filterassignmentinput" ng-model="filterassignment" ng-change="onSelectAssignno()">
+				<option ng-repeat="x in assignno">{{ x.assignno }}</option>
+					
+			</td>
+
+		</tr>
+		<tr >
+			<td><font color='red'>*</font>Select Subpart</td>
+
+			<td>
+				<div id='subpartbody' style="display: none;">
+			
+				<select id="filtersubpartinput" ng-model="filtersubpart" ng-change="onSelectSubpart()">
+				<option ng-repeat="x in subpart">{{ x.subpart }}</option>
+				</div>
+		
+			</td>
+		</tr>
+		
+		<tr>
+			
+			<td><font color='red'>*</font>Select Division</td>
+
+			<td>
+
+					<select id="filterdivisioninput" ng-model="filterdivision" ng-change="onSelectDiv()">
+					<option ng-repeat="x in division">{{ x.div_name }}</option>
+					
+			</td>
+
+		</tr>
+		<tr>
+			
+			<td><font color='red'>*</font>Select Batch</td>
+			<td>
+					<select  id="filterbatchinput" ng-model="filterbatch" ng-change="onSelectBat()">
+					<option ng-repeat="x in batch">{{ x.bat_name }}</option>
+			</td>
+
+		</tr>
+		<tr>
+			
+			<td>OR Filter by roll number</td>
+
+			<td>
+					<input type="text" maxlength="6"  ng-model="filterroll" >
+			</td>
+
+		</tr>
+		
+		<tr>
+			<td>
+				<button ng-click="applyfilterstatus=1">Apply</button>
+			</td>
+			<td></td>
+		</tr>
+		</table>
+	
+		
+
+
+	</div>
+
+
+
+	<table id="datatable" style="display:none" ng-init="link='displayassignment.html?assignno='">
+		
+		<tr>
+			<th>Assign. no.</th>
+			<th>Subpart</th>
+			<th>Assignment title</th>
+			<th>Last Updated by</th>
+			<th>Update assignments</th>
+		</tr>
+		<tr ng-repeat ="x in assignmentlist" >
+			<td>{{x.Assignment_no}}</td>
+			<td>{{x.subpart}}</td>
+
+			<td ><a ng-href="{{link+x.Assignment_no+':'+x.subpart}}">{{x.Assignment_title}}</a></td>
+			<td>{{x.last_updated}}</td>
+			<td><a ng-href="{{'updateassignmentactivitypage.html?assignno='+x.Assignment_no+':'+x.subpart}}">Update</a></td>
+		</tr>
+	</table>
+
+	</div>
+
+
+	<script type="text/javascript">
+	
+		var data = JSON.parse(localStorage.getItem("data"));
+		
+		var name = data.name;
+		
+		document.getElementById("displayname").innerHTML="Hello Prof. "+data.name;		
+	
+
+		angular.module("homepage",[]).controller("homepagecontroller",function($http,$scope)
+		{	
+
+
+			$scope.subjects=JSON.parse(localStorage.getItem("subjdata"));
+
+			$scope.listassignmentstatus=0;
+			$scope.createasssignmentstatus=0;
+			$scope.submissionstatus=0;
+			$scope.department = data.department;
+			$scope.subpart='';
+			$scope.applyfilterstatus=0;
+			$scope.filterassignment='';
+			$scope.filterdivision='';
+			$scope.filterbatch='';
+			$scope.filtersubpart='';
+			$scope.filterroll='';
+			$scope.id=localStorage.getItem("staffid");
+			
+			$scope.onSelect=function()
+			{
+
+
+				var e= document.getElementById('selectsubjectoption');
+				localStorage.setItem('subject',e.options[e.selectedIndex].value);
+				$scope.subject=e.options[e.selectedIndex].value;
+				document.getElementById('homepagebody').style.display='block';
+
+			$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'getAssignmentnumber.php',
+               		  data: {"subject": $scope.subject }
+         		 }).then(
+					function(response) 
+					{	
+						$scope.assignno = response.data.records;
+					});
+
+         	
+			$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'getdivision.php',
+               		  data: {"department": $scope.department,
+           			  		 "id": $scope.id,
+           			  		 "subject": $scope.subject }
+         		 }).then(
+					function(response) 
+					{	
+						$scope.division = response.data.records;
+					});
+
+
+         	$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'getbatch.php',
+               		  data: {"department": $scope.department,
+           			  		 "id": $scope.id,
+           			  		 "subject": $scope.subject }
+         		 }).then(
+					function(response) 
+					{	
+						$scope.batch = response.data.records;
+					});
+
+			}
+			$scope.onSelectDiv=function()
+			{
+
+
+				var e= document.getElementById('filterdivisioninput');
+				$scope.filterdivision=e.options[e.selectedIndex].value;
+			}
+			$scope.onSelectAssignno=function()
+			{
+
+
+				var e= document.getElementById('filterassignmentinput');
+				$scope.filterassignment=e.options[e.selectedIndex].value;
+					
+				$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'getsubparts.php',
+               		  data: {"subject": $scope.subject ,
+               				"Assignmentnumber": $scope.filterassignment}
+         		 }).then(
+					function(response) 
+					{	
+						$scope.subpart = response.data.records;
+						document.getElementById('subpartbody').style.display='block';
+					});
+
+
+			}
+
+			$scope.onSelectSubpart=function()
+			{
+				var e= document.getElementById('filtersubpartinput');
+				$scope.filtersubpart=e.options[e.selectedIndex].value;
+
+			}
+			$scope.onSelectBat=function()
+			{
+
+
+				var e= document.getElementById('filterbatchinput');
+				$scope.filterbatch=e.options[e.selectedIndex].value;
+			}
+			
+
+			$scope.watch('listassignmentstatus',function(newValue, oldValue)
+				{
+					$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'listassignments.php',
+               		  data: {"department": $scope.department,
+           			  			"subject": $scope.subject }
+         		 }).then(
+					function(response) 
+					{	
+						document.getElementById("datatable").style.display = "block";		
+						
+						$scope.assignmentlist = response.data.records;
+					});
+			});
+
+			$scope.watch('createasssignmentstatus',function(newValue, oldValue)
+				{
+
+					window.location.href = "AddAssignmentActivityPage.html";	
+				});
+
+
+			$scope.watch('submissionstatus', function(newValue, OldValue)
+				{
+					document.getElementById("filterdiv").style.display="block";
+				});
+			$scope.watch('applyfilterstatus',function(newValue, OldValue)
+				{
+					$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'submissionslist.php',
+               		  data: {"subject": $scope.subject,
+               		  		 "assignno": $scope.filterassignment,
+               		  		 "division": $scope.filterdivision,
+               		  		 "batch": $scope.filterbatch,
+               		  		 "subpart": $scope.filtersubpart,
+               		  		 "submitted_by": $scope.filterroll
+					}
+					}).then(function(response) 
+					{	
+						$scope.data=response.data;
+						
+						if($scope.data.error=="1")
+						{
+							alert('No submissions yet');
+						}
+						else if($scope.data.error=="2")
+						{
+							alert('Invalid filter');
+						}
+						else
+						{
+
+							localStorage.setItem('studentdata',JSON.stringify($scope.data));
+							window.location.href = "displaystudentsubmissions.html";	
+						}
+
+					});
+					
+				});
+
+		});
+	
+	
+	</script>
+
+
+
+</body>
+</html>

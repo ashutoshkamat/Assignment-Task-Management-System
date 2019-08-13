@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+	<title>Display assignmments</title>
+	
+	<link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="homepage.css">
+
+</head>
+<body class="homepage-staff" ng-app="displaydatamodule" ng-controller="displaydatacontroller">
+<div id="displaydata"></div>
+<a  class="back-b" href="homepage.html">BACK</a>
+<a  class="ref-b" href="displayassignment.html">Refresh</a>
+
+<div >
+	<br><br>
+	<table>
+		<tr>
+			<td>Title :</td>
+			<td><p id="title"></p></td>
+		</tr>
+		
+		<tr>
+			<td>Aim :</td>
+			<td><p id="aim"></p></td>
+		</tr>
+		<tr>
+			<td>Objective :</td>		
+			<td><p id="objective"></p></td>
+		</tr>
+		<tr >
+			<td>FAQ :</td>
+			<td><div id="FAQ"></div></td>
+		</tr>
+		<tr >
+			<td>Theory :</td>
+			<td><div id="Theory"></div></td>
+		</tr>
+		<tr>
+			<td>Conclusion :</td>
+			<td><p id="conclusion"></p></td>
+		</tr>
+		<tr>
+			<td>Outcome :</td>
+			<td><p id="outcome"></p></td>
+		</tr>
+		
+	</table>
+				<button ng-click="postassignmentstatus=1" id="postbtn">Post Assignment</button>
+
+	<div id="datediv" style="display:none">
+	<table  >		
+		<tr>
+		<td>
+		Enter submission Date </td>
+		<td>
+		<input type="number" ng-model="day" placeholder="DD" min=1 max=31>
+		<input type="number" ng-model="month" placeholder="MM" min=1 max=12>
+		<input type="number" ng-model="year" placeholder="YYYY" min=2018 max=2020>
+		</td>
+		</tr>
+		<tr>
+			<button ng-click="confirmpost=1">Confirm</button>
+
+		</tr>
+	</table>
+	</div>
+</div>
+<div id='msg'></div>
+
+<script type="text/javascript">
+	
+	angular.module('displaydatamodule',[]).controller('displaydatacontroller',function($http,$scope)
+	{
+	var urldata = location.search.substring(1);
+	var parameters = urldata.split('=');
+	parameters = parameters[1].split(':');
+	var assignmentnumber=parameters[0];
+	var subpart=parameters[1];
+
+	if(subpart=="-")
+	{					
+			subpart="N";
+	}
+	var postassignmentstatus=0;
+	var confirmpost=0;	
+
+
+	var data = JSON.parse(localStorage.getItem("data"));
+		
+
+
+		$http({
+              
+               method: 'POST',
+               url:  'updateassignment.php',
+               data: {"assignmentno":assignmentnumber,
+           				"subject": localStorage.getItem('subject'),
+           				"department": data.department,
+           				"subpart": subpart
+           			}
+          }).then(
+				function(response) 
+				{
+					$scope.data = response.data;
+					document.getElementById('aim').innerHTML=response.data.Aim;
+					document.getElementById('title').innerHTML=response.data.Title;
+					document.getElementById('objective').innerHTML=response.data.Objective;
+					document.getElementById('conclusion').innerHTML=response.data.Conclusion;
+					document.getElementById('outcome').innerHTML=response.data.Outcome;
+					var cnt=0;
+					var FAQdata='';
+					while(cnt<response.data.FAQ.length)
+					{
+						FAQdata=FAQdata+response.data.FAQ[cnt]["no"]+". "+response.data.FAQ[cnt]["Question"]+"<br>";
+						++cnt;
+					}
+					document.getElementById('FAQ').innerHTML=FAQdata;
+					cnt=0;
+					var Thdata='';
+					while(cnt<response.data.Theory.length)
+					{
+						Thdata=Thdata+response.data.Theory[cnt]["no"]+". "+response.data.Theory[cnt]["Question"]+"<br>";
+						++cnt;
+					}
+					document.getElementById('Theory').innerHTML=Thdata;
+										
+
+				}
+
+				);
+
+			$scope.watch('postassignmentstatus',function(newValue, oldValue)
+				{
+						document.getElementById("postbtn").disabled = "true";		
+						document.getElementById("datediv").style.display="block";
+
+				});
+
+
+			$scope.watch('confirmpost',function(newValue, oldValue)
+				{
+
+					$http({
+        	      
+            	 	  method: 'POST',
+               		  url:  'PostAssignment.php',
+               		  data: {"Assignmentno":  assignmentnumber,
+               		  		 "subject": localStorage.getItem('subject'),
+           			  		 "day": $scope.day,
+           			  		 "month": $scope.month,
+           			  		 "year": $scope.year,
+           			  		 "subpart": subpart }
+         		 }).then(
+					function(response) 
+					{	
+						
+						alert(JSON.stringify(response.data));
+						
+
+					});
+
+
+				}
+
+				);
+    	
+
+    });
+
+
+</script>
+
+
+
+</body>
+</html>

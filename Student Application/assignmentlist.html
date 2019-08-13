@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+	<title>Submissions</title>
+	<link rel="icon" type="image/png" href="submissions.png"/>
+	<link rel="stylesheet" type="text/css" href="mainpage.css">
+</head>
+
+<body class="back-image" ng-app="assignmentlist" ng-controller="assignmentlistcontroller">
+
+<a  class="back-b" href="homepage.html">BACK</a>
+<a  class="ref-b" href="assignmentlist.html">Refresh</a>
+
+	<div class="header">
+		<h1>Submissions</h1>
+		<br>
+		<label for="subject">
+			Select subject:			
+		</label>
+		<div id="selectsubject" >
+		<select id="selectsubjectoption" ng-model="selectedoption" ng-change="onSelect()">
+				<option ng-repeat="x in subjects">{{ x.subj_name }}</option>
+		</select>
+		</div>
+		<div id="datatable" style="display:none" ng-init="link='displayassignment.html?assignno='">
+		<table >
+		<tr>
+			<th>Assign. no.</th>
+			<th>Subpart</th>
+			<th>Assignment title</th>
+			<th>submission date</th>
+
+		</tr>
+		<tr ng-repeat ="x in assignmentlist" >
+			<td>{{x.Assignment_no}}</td>
+			<td>{{x.subpart}}</td>
+			<td ><a ng-href="{{link+x.Assignment_no+':'+x.subpart}}">{{x.Assignment_title}}</a></td>
+			<td>{{x.submission_date}}</td>
+		</tr>
+		</table>
+		</div>
+
+	</div>
+
+
+	<script type="text/javascript">
+	
+		
+			
+		angular.module("assignmentlist",[]).controller("assignmentlistcontroller",function($http,$scope)
+		{
+
+			var department = localStorage.getItem("department");
+			
+			$scope.subjects=JSON.parse(localStorage.getItem("subjects"));
+		
+			$scope.onSelect=function()
+			{
+
+
+				var e= document.getElementById('selectsubjectoption');
+				$scope.subject=e.options[e.selectedIndex].value;
+			
+
+				$http({
+        	      
+            	  	method: 'POST',
+               		  url:  'listassignments.php',
+               		  data: {"department": department,
+           			  			"subject": $scope.subject }
+         		 }).then(
+					function(response) 
+					{	
+						document.getElementById("datatable").style.display = "block";		
+		
+						$scope.assignmentlist = response.data.records;
+
+					});
+			
+			}
+			
+		});
+	
+	
+</script>
+
+</body>
+</html>

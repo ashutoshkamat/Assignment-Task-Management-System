@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<title></title>
+</head>
+<body ng-app="displaysubmissionsmodule" ng-controller="displaysubmissioncontroller">
+<div id='msg'></div>
+<div id="displaydata">
+	<br>
+	<br>
+</div>
+
+<div id='checkassignment'>
+	<button ng-click='chkstatus=1'>Check assignment</button>
+</div>
+<script type="text/javascript">
+
+	angular.module("displaysubmissionsmodule",[]).controller("displaysubmissioncontroller",function($http,$scope)
+	{
+	var data = JSON.parse(localStorage.getItem("data"));
+	$scope.chkstatus=0;
+	var urldata = location.search.substring(1);
+	var parameters = urldata.split('=');
+	parameters = parameters[1].split(':');
+	
+
+	var assignmentnumber=parameters[0];
+	var subpart=parameters[1];
+	var rollnumber=parameters[2];
+	var department=data.department;
+	var subject= localStorage.getItem('subject');
+
+
+	$http({
+              
+               method: 'POST',
+               url:  'displaysubmissiondata.php',
+               data: {"department": department,
+           			  "subject": subject,
+           			  "assignmentno":assignmentnumber,
+           			  "subpart": subpart,
+           			  "roll": rollnumber
+						}
+          }).then(
+
+          function(response) 
+				{
+					$scope.data = response.data;
+					document.getElementById('displaydata').innerHTML=$scope.data;
+
+			});
+      	
+
+
+		$scope.watch('chkstatus',function(newValue, oldValue)
+			{
+				$http({
+        	      
+            	  method: 'POST',
+               	  url:  'checkassignments.php',
+               	  data: {"subject": subject,
+           			  	 "assignmentno":assignmentnumber,
+           			  	 "subpart": subpart,
+           			  	"roll": rollnumber
+
+           			  	}
+         		 }).then(
+					function(response) 
+					{	
+						alert("Assignment checked successfully !!");
+					});
+			});
+	});
+
+
+</script>
+</body>
+</html>

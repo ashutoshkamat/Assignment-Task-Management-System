@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="homepage.css">
+
+	
+	<title></title>
+</head>
+<style> 
+
+</style>
+
+<body class="homepage-staff">
+
+ 	<a  class="back-b" href="homepage.html">BACK</a>
+	<a  class="ref-b" href="AddAssignmentActivityPage.html">Refresh</a>
+<div ng-app="AssignmentActivity" ng-controller="AssignmentActivitycontroller">
+	
+	<table id='form'>
+		<tr>
+			<td>Subject name :</td>
+			<td>{{subject}}</td>
+		</tr>
+		<tr>
+			<td>Assignment no</td>
+			<td><input type="number" min="{{assignno}}" max="20" ng-model="assignmentno" size="150px"></td>
+		</tr>
+		<tr>
+			<td>Subpart</td>
+			<td><input type="text" ng-model="subpart" size="150px"></td>
+		</tr>
+		<tr>
+			<td>Title :</td>
+			<td><input type="text" ng-model="title" size="150px"></td>
+		</tr>
+		<tr>
+			<td>Aim :</td>
+			<td><input type="text" ng-model="aim" size="150px"></td>
+		</tr>
+		<tr>
+			<td>Objective :</td>		
+			<td><input type="text" ng-model="objective" size="150px"></td>
+		</tr>
+		<tr >
+			<td>FAQ :</td>
+			<td><button ng-click="addclick=1">Add</button></td>
+		</tr>
+		<tr >
+			<td>Theory :</td>
+			<td><button ng-click="thclick=1">Add</button></td>
+		</tr>
+		<tr>
+			<td>Conclusion :</td>
+			<td><input type="text" ng-model="conclusion" size="150px"></td>
+		</tr>
+		<tr>
+			<td>Outcome :</td>
+			<td><input type="text" ng-model="outcome" size="150px"></td>
+		</tr>
+
+
+	</table>
+		
+	<button ng-click="status=1" style="box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);">Store assignment</button>
+	
+	
+
+</div>
+
+<script type="text/javascript">
+	
+angular.module("AssignmentActivity",[]).controller("AssignmentActivitycontroller",function($scope,$http)
+	{
+		var data = JSON.parse(localStorage.getItem("data"));
+		var assignmentno="";
+		var txtfield="";
+		var FAQ='[';
+		var Theory='[';
+		$scope.outcome="";
+		$scope.aim="";
+		$scope.title="";
+		$scope.conclusion="";
+		$scope.objective="";
+		$scope.name=data.name;
+		$scope.department=data.department;
+		$scope.subject=localStorage.getItem('subject');
+		$scope.addclick=0;
+		$scope.thclick=0;
+		$scope.status=0;
+		var i=7;
+		var j=8;
+		var no=0;
+		var thno=0;
+		$http({
+              
+               method: 'POST',
+               url:  'returntotalassignment.php',
+               data: {"subject":$scope.subject,
+           			  "department":$scope.department}
+          }).then(
+				function(response) 
+				{
+					$scope.assignno = response.data;
+					if(JSON.stringify(response.data).charAt(1)=="1")
+					{
+					$scope.assignno=parseInt(JSON.stringify(response.data).substring(2));
+					}
+					else
+					{
+					$scope.assignno=parseInt(JSON.stringify(response.data).substring(2))+1;
+					}
+					
+				});
+		
+
+		$scope.watch('status',function(newValue, oldValue)
+		{
+				if($scope.outcome.localeCompare("")==0 && $scope.title.localeCompare("")==0 && $scope.aim.localeCompare("")==0 && $scope.objective.localeCompare("")==0 && $scope.conclusion.localeCompare("")==0)
+				{
+					alert("Empty Fields !");
+				}
+				else 
+				{
+				var count=1;
+
+				for( count=1 ; count<=no ; count++){
+
+						FAQ=FAQ+'{"no":"'+count+'",';
+						FAQ=FAQ+'"Question":'+'"'+document.getElementById('FAQ'+count).value+'"}';
+						if(count !=no)
+							FAQ=FAQ+",";
+						else
+							FAQ=FAQ+"]";
+							
+					}
+					
+					for( count=1 ; count<=thno ; count++){
+						
+						Theory=Theory+'{"no":"'+count+'",';
+						Theory=Theory+'"Question":'+'"'+document.getElementById('Theory'+count).value+'"}';
+					
+						if(count !=thno)
+							Theory=Theory+",";
+						else
+							Theory=Theory+"]";
+											
+					}
+				
+
+				$http({
+              
+
+
+               method: 'POST',
+               url:  'draftassignment.php',
+               data: {"Assignmentno": $scope.assignmentno,
+               		  "subpart": $scope.subpart,
+               			"staffname":$scope.name,
+               		   "title": $scope.title,
+               		   "department": $scope.department,
+               		   "subject":$scope.subject,
+               		  "aim": $scope.aim,
+               		  "objective": $scope.objective,
+               		  "FAQ":FAQ,
+               		  "Theory":Theory,
+           			 "outcome": $scope.outcome,
+           			 "conclusion": $scope.conclusion
+           		}
+    	      }).then(
+				function(response) 
+				{
+					$scope.name = response.data;
+					alert("Assignment added to Drafts");
+				
+				});
+      	}
+		});
+
+		$scope.watch('addclick', function(newValue,oldValue)
+			{
+
+				no=no+1;
+				var txtfield=document.createElement('INPUT');
+				txtfield.id="FAQ"+no;
+				txtfield.style.width='920px';
+				var table=document.getElementById('form');
+				var row=table.insertRow(i);			
+				var cell1=row.insertCell(0);
+				cell1.innerHTML=no;
+				var cell2=row.insertCell(1);
+				cell2.appendChild(txtfield);
+				
+				$scope.addclick=0;
+				i=i+1;	
+				j=j+1;
+			});
+			
+
+		$scope.watch('thclick', function(newValue,oldValue)
+			{
+
+				thno=thno+1;
+				var txtfield=document.createElement('INPUT');
+				txtfield.id="Theory"+thno;
+				txtfield.style.width='920px';
+				var table=document.getElementById('form');
+				var row=table.insertRow(j);			
+				var cell1=row.insertCell(0);
+				cell1.innerHTML=thno;
+				var cell2=row.insertCell(1)
+				cell2.appendChild(txtfield);
+				
+				$scope.thclick=0;
+				j=j+1;	
+			});
+			
+
+	});
+
+</script>
+</body>
+</html>
